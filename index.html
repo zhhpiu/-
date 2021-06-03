@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="js/vue.js"></script>
+    <style>
+        /* 清除内外边距 */
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        #app {
+            width: 800px;
+            margin: 50px auto;
+            background-color: skyblue;
+        }
+
+        table {
+            width: 100%;
+            background-color: #000;
+        }
+
+        table tr {
+            background-color: #fff;
+        }
+
+        form {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="app">
+        <!-- 更多操作显示 -->
+        <form v-show="isShow">
+            <input type="text" placeholder="请输入序号" v-model="person.id">
+            <input type="text" placeholder="请输入姓名" v-model="person.name">
+            <input type="text" placeholder="请输入分数" v-model="person.score">
+            <input type="submit" value="新增" @click.prevent="add">
+            <input type="submit" value="查询" @click.prevent="query">
+        </form>
+        <!-- 原始表格 -->
+        <table>
+            <!-- 表头行 -->
+            <tr>
+                <th>序号</th>
+                <th>姓名</th>
+                <th>分数</th>
+                <th>时间</th>
+                <th>操作</th>
+            </tr>
+            <!-- 内容行 -->
+            <!-- 遍历各个对象 -->
+            <tr v-for="(person,index) in persons">
+                <!-- <td><input type="text" :value="person.id" :disabled="isDisabled"></td>
+                <td><input type="text" :value="person.name" :disabled="isDisabled"></td>
+                <td><input type="text" :value="person.score" :disabled="isDisabled"></td>
+                <td><input type="text" :value="person.time | dateFormat" :disabled="isDisabled"></td> -->
+                <!-- v-model数据双向传递 -->
+                <td><input type="text" v-model="person.id" :disabled="isDisabled"></td>
+                <td><input type="text" v-model="person.name" :disabled="isDisabled"></td>
+                <td><input type="text" v-model="person.score" :disabled="isDisabled"></td>
+                <td><input type="text" :value="person.time | dateFormat" disabled></td>
+                <td>
+                    <!-- prevent修饰符阻止a标签链接跳转默认事件 -->
+                    <a href="#" @click.prevent="edit">编辑</a>
+                    <!-- 数据双向传递，根据index值删除 -->
+                    <a href="#" @click.prevent="del(index)">删除</a><br>
+                    <a href="#" @click.prevent="toggle">更多操作</a>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+
+    <script>
+        //   日期格式化 过滤器
+        Vue.filter("dateFormat", function (value, format) {
+            let date = new Date(value)
+            let year = date.getFullYear()
+            let month = date.getMonth() + 1 + ""
+            let day = date.getDay() + ""
+            let hour = date.getHours() + ""
+            let minute = date.getMinutes() + ""
+            let second = date.getSeconds() + ""
+            if (format && format === "yyyy-MM-dd") {
+                return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`
+            }
+            return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")} ${hour.padStart(2, "0")}:${minute.padStart(2, "0")}:${second.padStart(2, "0")}`
+        })
+
+        let vue = new Vue({
+            el: '#app',
+            data: {
+                isDisabled: true,
+                isShow: false,
+                persons: [{
+                    id: 1,
+                    name: "zs",
+                    score: "99",
+                    time: Date.now()
+                }, {
+                    id: 2,
+                    name: "ls",
+                    score: "88",
+                    time: Date.now()
+                }, {
+                    id: 3,
+                    name: "ww",
+                    score: "77",
+                    time: Date.now()
+                }
+                ],
+                person: {
+                    id: "",
+                    name: "",
+                    score: "",
+                }
+            },
+            // 用于存储监听事件回调函数
+            methods: {
+                edit() {
+                    this.isDisabled = !this.isDisabled;
+                },
+                toggle() {
+                    this.isShow = !this.isShow;
+                },
+                // 根据index值，删除对应person
+                del(index) {
+                    // console.log(index);
+                    this.persons.splice(index, 1);
+                },
+                add() {
+                    this.person.time = Date.now();
+                    this.persons.push(this.person);
+                    this.person = {
+                        id: "",
+                        name: "",
+                        score: "",
+                    }
+                },
+                // 查询
+                query() {
+                    // 箭头函数，this指向了定义时所在的对象（window）
+                    let search = this.persons.filter((person) => {
+                        // person.score是内存中数据，this.person.score是搜索框数据
+                        if (person.score === this.person.score) {
+                            return true;
+                            // filter()把传入的函数依次作用于每个元素，然后根据返回值是true还是false决定保留还是丢弃该元素
+                        }
+                    })
+                    // 对persons对象重新赋值
+                    this.persons = search;
+                }
+            }
+        })
+    </script>
+</body>
+
+</html>
